@@ -2,7 +2,7 @@
 <RunSettings>
   <RunConfiguration>
     <ResultsDirectory>C:\Test\Results</ResultsDirectory>
-    <TargetPlatform>X86</TargetPlatform>
+    <TargetPlatform>X64</TargetPlatform>
     <MaxCpuCount>1</MaxCpuCount>
     <BatchSize>10</BatchSize>
     <TestSessionTimeout>21600000</TestSessionTimeout>
@@ -11,7 +11,7 @@
     <CollectSourceInformation>False</CollectSourceInformation>
     <DisableAppDomain>False</DisableAppDomain>
     <DisableParallelization>False</DisableParallelization>
-    <TargetFrameworkVersion>.NETFramework,Version=v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>.NETFramework,Version=v4.7.2</TargetFrameworkVersion>
     <ExecutionThreadApartmentState>STA</ExecutionThreadApartmentState>
     <TestAdaptersPaths>%SystemDrive%\Test</TestAdaptersPaths>
     <TreatTestAdapterErrorsAsWarnings>False</TreatTestAdapterErrorsAsWarnings>
