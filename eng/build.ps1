@@ -94,7 +94,7 @@ function Process-Arguments() {
   OfficialBuildOnly "officialSkipApplyOptimizationData"
 
   if ($officialBuildId) {
-    $script:applyOptimizationData = ![System.Boolean]::Parse($officialSkipApplyOptimizationData)
+    $script:applyOptimizationData = $false
   } else {
     $script:applyOptimizationData = $false
   }
