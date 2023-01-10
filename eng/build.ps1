@@ -29,7 +29,7 @@ Param(
 
   # official build settings
   [string]$officialBuildId = "",
-  [string]$officialSkipApplyOptimizationData = "",
+  [string]$officialSkipApplyOptimizationData = "true",
 
   [Parameter(ValueFromRemainingArguments=$true)][String[]]$properties
 )
