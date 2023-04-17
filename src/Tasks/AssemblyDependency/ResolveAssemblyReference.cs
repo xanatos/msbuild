@@ -2295,12 +2295,37 @@ namespace Microsoft.Build.Tasks
                     _cache.SetInstalledAssemblyInformation(installedAssemblyTableInfo);
 
                     // Cache delegates.
-                    getAssemblyName = _cache.CacheDelegate(getAssemblyName);
                     getAssemblyMetadata = _cache.CacheDelegate(getAssemblyMetadata);
                     fileExists = _cache.CacheDelegate();
                     directoryExists = _cache.CacheDelegate(directoryExists);
                     getDirectories = _cache.CacheDelegate(getDirectories);
                     getRuntimeVersion = _cache.CacheDelegate(getRuntimeVersion);
+
+                    ReferenceTable dependencyTable = null;
+
+                    // Wrap the GetLastWriteTime call with a check for immutable files.
+                    _cache.SetGetLastWriteTime(path =>
+                    {
+                        if (dependencyTable?.IsImmutableFile(path) == true)
+                        {
+                            // We don't want to perform I/O to see what the actual timestamp on disk is so we return a fixed made up value.
+                            // Note that this value makes the file exist per the check in SystemState.FileTimestampIndicatesFileExists.
+                            return DateTime.MaxValue;
+                        }
+                        return getLastWriteTime(path);
+                    });
+
+                    GetAssemblyName originalGetAssemblyName = getAssemblyName;
+                    getAssemblyName = _cache.CacheDelegate(path =>
+                    {
+                        AssemblyNameExtension assemblyName = dependencyTable?.GetImmutableFileAssemblyName(path);
+                        AssemblyNameExtension originalAssemblyName = originalGetAssemblyName(path);
+                        if (assemblyName.FullName != originalAssemblyName.FullName)
+                        {
+                            throw new InvalidOperationException();
+                        }
+                        return assemblyName;
+                    });
 
                     _projectTargetFramework = FrameworkVersionFromString(_projectTargetFrameworkAsString);
 
@@ -2330,7 +2355,7 @@ namespace Microsoft.Build.Tasks
                             : null;
 
                     // Start the table of dependencies with all of the primary references.
-                    ReferenceTable dependencyTable = new ReferenceTable(
+                    dependencyTable = new ReferenceTable(
                         BuildEngine,
                         _findDependencies,
                         _findSatellites,
@@ -2372,18 +2397,6 @@ namespace Microsoft.Build.Tasks
                         assemblyMetadataCache);
 
                     dependencyTable.FindDependenciesOfExternallyResolvedReferences = FindDependenciesOfExternallyResolvedReferences;
-
-                    // Wrap the GetLastWriteTime call with a check for immutable files.
-                    _cache.SetGetLastWriteTime(path =>
-                    {
-                        if (dependencyTable.IsImmutableFile(path))
-                        {
-                            // We don't want to perform I/O to see what the actual timestamp on disk is so we return a fixed made up value.
-                            // Note that this value makes the file exist per the check in SystemState.FileTimestampIndicatesFileExists.
-                            return DateTime.MaxValue;
-                        }
-                        return getLastWriteTime(path);
-                    });
 
                     // If AutoUnify, then compute the set of assembly remappings.
                     var generalResolutionExceptions = new List<Exception>();

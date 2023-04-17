@@ -43,7 +43,7 @@ namespace Microsoft.Build.Tasks
         /// <summary>
         /// Resolved normalized full paths of primary references resolved by an external entity to RAR and considered immutable.
         /// </summary>
-        private readonly HashSet<string> _externallyResolvedImmutableFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, AssemblyNameExtension> _externallyResolvedImmutableFiles = new Dictionary<string, AssemblyNameExtension>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>The table of remapped assemblies. Used for Unification.</summary>
         private IEnumerable<DependentAssembly> _remappedAssemblies = Enumerable.Empty<DependentAssembly>();
@@ -630,11 +630,11 @@ namespace Microsoft.Build.Tasks
             // that we'll have a better (more information) fusion name once we know the assembly path.
             try
             {
-                ResolveReference(assemblyName, rawFileNameCandidate, reference);
+                ResolveReference(assemblyName, rawFileNameCandidate, reference, out bool isImmutableFrameworkReference);
 
                 if (reference.IsResolved)
                 {
-                    AssemblyNameExtension possiblyBetterAssemblyName;
+                    AssemblyNameExtension possiblyBetterAssemblyName = null;
 
                     try
                     {
@@ -826,6 +826,26 @@ namespace Microsoft.Build.Tasks
             {
                 value = fusionName.Substring(position, nextDelimiter - position);
             }
+        }
+
+        private static AssemblyNameExtension GetAssemblyNameFromItemMetadata(ITaskItem item)
+        {
+            string version = item.GetMetadata(ItemMetadataNames.assemblyVersion);
+            if (string.IsNullOrEmpty(version))
+            {
+                return null;
+            }
+
+            string publicKeyToken = item.GetMetadata(ItemMetadataNames.publicKeyToken);
+            if (string.IsNullOrEmpty(publicKeyToken))
+            {
+                return null;
+            }
+
+            string name = Path.GetFileNameWithoutExtension(item.ItemSpec);
+
+            AssemblyName assemblyName = new AssemblyName($"{name}, Version={version}, PublicKeyToken={publicKeyToken}");
+            return new AssemblyNameExtension(assemblyName);
         }
 
         /// <summary>
@@ -1225,12 +1245,14 @@ namespace Microsoft.Build.Tasks
         /// <param name="assemblyName">The fusion name for this reference.</param>
         /// <param name="rawFileNameCandidate">The file name to match if {RawFileName} is seen. (May be null).</param>
         /// <param name="reference">The reference object.</param>
+        /// <param name="isImmutableFrameworkReference"></param>
         private void ResolveReference(
             AssemblyNameExtension assemblyName,
             string rawFileNameCandidate,
-            Reference reference)
+            Reference reference,
+            out bool isImmutableFrameworkReference)
         {
-            bool isImmutableFrameworkReference = false;
+            isImmutableFrameworkReference = false;
             if (ChangeWaves.AreFeaturesEnabled(ChangeWaves.Wave17_7))
             {
                 // To consider a path an immutable reference, it must be externally resolved and has a FrameworkReferenceName defined.
@@ -1311,7 +1333,7 @@ namespace Microsoft.Build.Tasks
                 resolvedPath = FileUtilities.NormalizePath(resolvedPath);
                 if (isImmutableFrameworkReference)
                 {
-                    _externallyResolvedImmutableFiles.Add(resolvedPath);
+                    _externallyResolvedImmutableFiles.Add(resolvedPath, GetAssemblyNameFromItemMetadata(reference.PrimarySourceItem));
                 }
                 reference.FullPath = resolvedPath;
 
@@ -1762,7 +1784,7 @@ namespace Microsoft.Build.Tasks
                 // Has this reference been resolved to a file name?
                 if (!reference.IsResolved && !reference.IsUnresolvable)
                 {
-                    ResolveReference(assembly.Key, null, reference);
+                    ResolveReference(assembly.Key, null, reference, out _);
                 }
             }
         }
@@ -3188,7 +3210,14 @@ namespace Microsoft.Build.Tasks
         /// <returns>True if knows to be immutable, false otherwise.</returns>
         internal bool IsImmutableFile(string path)
         {
-            return _externallyResolvedImmutableFiles.Contains(path);
+            return _externallyResolvedImmutableFiles.ContainsKey(path);
+        }
+
+        internal AssemblyNameExtension GetImmutableFileAssemblyName(string path)
+        {
+            return _externallyResolvedImmutableFiles.TryGetValue(path, out AssemblyNameExtension assemblyNameExtension)
+                ? assemblyNameExtension
+                : null;
         }
     }
 }
