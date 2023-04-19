@@ -2373,6 +2373,18 @@ namespace Microsoft.Build.Tasks
 
                     dependencyTable.FindDependenciesOfExternallyResolvedReferences = FindDependenciesOfExternallyResolvedReferences;
 
+                    // Wrap the GetLastWriteTime call with a check for immutable files.
+                    _cache.SetGetLastWriteTime(path =>
+                    {
+                        if (dependencyTable.IsImmutableFile(path))
+                        {
+                            // We don't want to perform I/O to see what the actual timestamp on disk is so we return a fixed made up value.
+                            // Note that this value makes the file exist per the check in SystemState.FileTimestampIndicatesFileExists.
+                            return DateTime.MaxValue;
+                        }
+                        return getLastWriteTime(path);
+                    });
+
                     // If AutoUnify, then compute the set of assembly remappings.
                     var generalResolutionExceptions = new List<Exception>();
 

@@ -40,6 +40,11 @@ namespace Microsoft.Build.Tasks
         /// </summary>
         private readonly HashSet<string> _externallyResolvedPrimaryReferences = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
+        /// <summary>
+        /// Resolved normalized full paths of primary references resolved by an external entity to RAR and considered immutable.
+        /// </summary>
+        private readonly HashSet<string> _externallyResolvedImmutableFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
         /// <summary>The table of remapped assemblies. Used for Unification.</summary>
         private IEnumerable<DependentAssembly> _remappedAssemblies = Enumerable.Empty<DependentAssembly>();
 
@@ -1225,6 +1230,17 @@ namespace Microsoft.Build.Tasks
             string rawFileNameCandidate,
             Reference reference)
         {
+            bool isImmutableFrameworkReference = false;
+            if (ChangeWaves.AreFeaturesEnabled(ChangeWaves.Wave17_7))
+            {
+                // To consider a path an immutable reference, it must be externally resolved and has a FrameworkReferenceName defined.
+                if (assemblyName == null && !string.IsNullOrEmpty(rawFileNameCandidate) && reference.IsPrimary && reference.ExternallyResolved)
+                {
+                    string frameworkReferenceName = reference.PrimarySourceItem.GetMetadata(ItemMetadataNames.frameworkReferenceName);
+                    isImmutableFrameworkReference = !string.IsNullOrEmpty(frameworkReferenceName);
+                }
+            }
+
             // Now, resolve this reference.
             string resolvedPath = null;
             string resolvedSearchPath = String.Empty;
@@ -1272,6 +1288,7 @@ namespace Microsoft.Build.Tasks
                     reference.SDKName,
                     rawFileNameCandidate,
                     reference.IsPrimary,
+                    isImmutableFrameworkReference,
                     reference.WantSpecificVersion,
                     reference.GetExecutableExtensions(_allowedAssemblyExtensions),
                     reference.HintPath,
@@ -1291,7 +1308,13 @@ namespace Microsoft.Build.Tasks
             // If the path was resolved, then specify the full path on the reference.
             if (resolvedPath != null)
             {
-                reference.FullPath = FileUtilities.NormalizePath(resolvedPath);
+                resolvedPath = FileUtilities.NormalizePath(resolvedPath);
+                if (isImmutableFrameworkReference)
+                {
+                    _externallyResolvedImmutableFiles.Add(resolvedPath);
+                }
+                reference.FullPath = resolvedPath;
+
                 reference.ResolvedSearchPath = resolvedSearchPath;
                 reference.UserRequestedSpecificFile = userRequestedSpecificFile;
             }
@@ -3155,6 +3178,17 @@ namespace Microsoft.Build.Tasks
             }
 
             return anyMarkedReference;
+        }
+
+        /// <summary>
+        /// Returns true if the full path passed in <paramref name="path"/> represents a file that came from an external trusted
+        /// entity and is guaranteed to be immutable.
+        /// </summary>
+        /// <param name="path">The path to check.</param>
+        /// <returns>True if knows to be immutable, false otherwise.</returns>
+        internal bool IsImmutableFile(string path)
+        {
+            return _externallyResolvedImmutableFiles.Contains(path);
         }
     }
 }

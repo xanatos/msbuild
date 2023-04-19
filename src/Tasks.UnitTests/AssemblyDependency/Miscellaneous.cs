@@ -8564,5 +8564,37 @@ namespace Microsoft.Build.UnitTests.ResolveAssemblyReference_Tests
 
             File.WriteAllText(profileRedistList, profileListContents);
         }
+
+        [Fact]
+        public void FrameworkReferencesAreTrusted()
+        {
+            InitializeRARwithMockEngine(_output, out MockEngine mockEngine, out ResolveAssemblyReference rar);
+
+            TaskItem item = new TaskItem(Path.Combine(Path.GetTempPath(), new Guid().ToString()));
+            item.SetMetadata("ExternallyResolved", "true");
+            item.SetMetadata("FrameworkReferenceName", "Microsoft.NETCore.App");
+            item.SetMetadata("FrameworkReferenceVersion", "8.0.0");
+
+            rar.Assemblies = new ITaskItem[] { item };
+
+            rar.Execute(
+                fileExists,
+                directoryExists,
+                getDirectories,
+                getAssemblyName,
+                getAssemblyMetadata,
+#if FEATURE_WIN32_REGISTRY
+                getRegistrySubKeyNames,
+                getRegistrySubKeyDefaultValue,
+#endif
+                getLastWriteTime,
+                getRuntimeVersion,
+#if FEATURE_WIN32_REGISTRY
+                openBaseKey,
+#endif
+                checkIfAssemblyIsInGac,
+                isWinMDFile,
+                readMachineTypeFromPEHeader).ShouldBeTrue();
+        }
     }
 }
