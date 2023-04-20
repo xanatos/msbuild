@@ -2320,11 +2320,11 @@ namespace Microsoft.Build.Tasks
                     {
                         AssemblyNameExtension assemblyName = dependencyTable?.GetImmutableFileAssemblyName(path);
                         AssemblyNameExtension originalAssemblyName = originalGetAssemblyName(path);
-                        if (assemblyName.FullName != originalAssemblyName.FullName)
+                        if (assemblyName != null && originalAssemblyName != null && assemblyName.FullName != originalAssemblyName.FullName)
                         {
-                            throw new InvalidOperationException();
+                            throw new InvalidOperationException($"'{path}' -> '{assemblyName.FullName}' vs. '{originalAssemblyName.FullName}'");
                         }
-                        return assemblyName;
+                        return assemblyName ?? originalAssemblyName;
                     });
 
                     _projectTargetFramework = FrameworkVersionFromString(_projectTargetFrameworkAsString);
