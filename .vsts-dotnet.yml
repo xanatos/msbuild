@@ -251,6 +251,7 @@ stages:
       condition: succeededOrFailed()
       
     - script: echo "System.TeamProject> $(System.TeamProject); Build.Reason> $(Build.Reason); Build.SourceBranch> $(Build.SourceBranch)"
+      condition: succeededOrFailed()
       
     - template: /eng/common/templates/steps/component-governance.yml
       parameters:
