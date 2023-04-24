@@ -250,7 +250,7 @@ stages:
       displayName: Execute cleanup tasks
       condition: succeededOrFailed()
       
-    - script: echo "System.TeamProject: $(System.TeamProject); Build.Reason: $(Build.Reason); Build.SourceBranch: $(Build.SourceBranch)"
+    - script: echo "System.TeamProject> $(System.TeamProject); Build.Reason> $(Build.Reason); Build.SourceBranch> $(Build.SourceBranch)"
       
     - template: /eng/common/templates/steps/component-governance.yml
       parameters:
