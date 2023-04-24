@@ -250,6 +250,8 @@ stages:
       displayName: Execute cleanup tasks
       condition: succeededOrFailed()
       
+    - script: echo "System.TeamProject: $(System.TeamProject); Build.Reason: $(Build.Reason); Build.SourceBranch: $(Build.SourceBranch)"
+      
     - template: /eng/common/templates/steps/component-governance.yml
       parameters:
         ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), or(startsWith(variables['Build.SourceBranch'], 'vs'), eq(variables['Build.SourceBranch'], 'main'))) }}:
