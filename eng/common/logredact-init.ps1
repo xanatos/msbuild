@@ -16,8 +16,9 @@ function InstallRedactorCli ($toolpath) {
     & "$dotnet" tool uninstall $packageName -g
   }
 
-  # https://devdiv.pkgs.visualstudio.com/DevDiv/_packaging/em-tools/nuget/v3/index.json
-  $packageFeed = 'https://pkgs.dev.azure.com/dnceng/7ea9116e-9fac-403d-b258-b31fcf1bb293/_packaging/41d92f4c-3da0-42e5-9736-2eb5905885b9/nuget/v3/index.json'
+  # https://devdiv.pkgs.visualstudio.com/DevDiv/_packaging/JanK/nuget/v3/index.json 
+  # 'https://pkgs.dev.azure.com/dnceng/7ea9116e-9fac-403d-b258-b31fcf1bb293/_packaging/41d92f4c-3da0-42e5-9736-2eb5905885b9/nuget/v3/index.json'
+  $packageFeed = 'https://devdiv.pkgs.visualstudio.com/DevDiv/_packaging/JanK/nuget/v3/index.json'
 
   Write-Host "Installing Binlog redactor CLI..."
   Write-Host 'You may need to restart your command window if this is the first dotnet tool you have installed.'
