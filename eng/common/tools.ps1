@@ -889,6 +889,12 @@ function Get-Darc($version) {
   return "$darcPath\darc.exe"
 }
 
+function Get-Logredactor() {
+  $redactorPath  = "$TempDir\logredactor\$(New-Guid)"
+  & $PSScriptRoot\logredact-init.ps1 -toolpath $redactorPath | Out-Host
+  return "$redactorPath\redact-binlog.exe"
+}
+
 . $PSScriptRoot\pipeline-logging-functions.ps1
 
 $RepoRoot = Resolve-Path (Join-Path $PSScriptRoot '..\..\')

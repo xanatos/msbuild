@@ -12,7 +12,14 @@ steps:
       Move-Item -Path $(Build.SourcesDirectory)/artifacts/log/Debug/* $(Build.SourcesDirectory)/PostBuildLogs/${{parameters.StageLabel}}/${{parameters.JobLabel}}/
   continueOnError: true
   condition: always()
-
+  
+- task: PowerShell@2
+  displayName: Redact Logs
+  inputs:
+    filePath: $(Build.SourcesDirectory)/eng/common/post-build/redact-logs.ps1
+    arguments: -InputPath '$(Build.SourcesDirectory)/PostBuildLogs' 
+      '$(publishing-dnceng-devdiv-code-r-build-re)' '$(MaestroApiAccessToken)' 'restore'
+      
 - task: PublishBuildArtifacts@1
   displayName: Publish Logs
   inputs:
