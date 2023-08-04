@@ -18,7 +18,7 @@ steps:
   inputs:
     filePath: $(Build.SourcesDirectory)/eng/common/post-build/redact-logs.ps1
     arguments: -InputPath '$(Build.SourcesDirectory)/PostBuildLogs' 
-      '$(publishing-dnceng-devdiv-code-r-build-re)' '$(MaestroApiAccessToken)' 'restore'
+      '$(publishing-dnceng-devdiv-code-r-build-re)' '$(MaestroApiAccessToken)' '$(MaestroAccessToken)' 'restore' 'Restore'
       
 - task: PublishBuildArtifacts@1
   displayName: Publish Logs
