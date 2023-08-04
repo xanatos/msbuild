@@ -30,6 +30,8 @@ try {
   $toolPath  = "$TempDir\logredactor\$(New-Guid)"
   $verbosity = 'minimal'
   
+  New-Item -ItemType Directory -Force -Path $toolPath
+  
   Push-Location -Path $toolPath
 
   try {
