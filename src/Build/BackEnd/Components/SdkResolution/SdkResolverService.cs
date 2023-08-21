@@ -104,11 +104,6 @@ namespace Microsoft.Build.BackEnd.SdkResolution
             _resolverStateBySubmission.TryRemove(submissionId, out _);
         }
 
-        public virtual void ClearCaches()
-        {
-            _resolverStateBySubmission.Clear();
-        }
-
         /// <inheritdoc cref="ISdkResolverService.ResolveSdk"/>
         public virtual SdkResult ResolveSdk(int submissionId, SdkReference sdk, LoggingContext loggingContext, ElementLocation sdkReferenceLocation, string solutionPath, string projectPath, bool interactive, bool isRunningInVisualStudio, bool failOnUnresolvedSdk)
         {
@@ -375,7 +370,7 @@ namespace Microsoft.Build.BackEnd.SdkResolution
         }
 
         /// <summary>
-        /// Used for unit tests only.  This is currently only called through reflection in Microsoft.Build.Engine.UnitTests.TransientSdkResolution.CallResetForTests
+        /// Used for unit tests only.
         /// </summary>
         /// <param name="resolverLoader">An <see cref="SdkResolverLoader"/> to use for loading SDK resolvers.</param>
         /// <param name="resolvers">Explicit set of SdkResolvers to use for all SDK resolution.</param>

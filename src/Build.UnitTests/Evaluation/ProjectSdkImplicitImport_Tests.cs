@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Xml;
+using Microsoft.Build.BackEnd.SdkResolution;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
@@ -83,6 +84,8 @@ namespace Microsoft.Build.UnitTests.OM.Construction
 
         public ProjectSdkImplicitImport_Tests()
         {
+            CachingSdkResolverService.ClearCaches();
+
             _env = TestEnvironment.Create();
 
             _testSdkRoot = _env.CreateFolder().Path;

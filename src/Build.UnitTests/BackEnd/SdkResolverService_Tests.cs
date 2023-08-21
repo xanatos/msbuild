@@ -31,6 +31,8 @@ namespace Microsoft.Build.Engine.UnitTests.BackEnd
 
         public SdkResolverService_Tests()
         {
+            CachingSdkResolverService.ClearCaches();
+
             _logger = new MockLogger();
             ILoggingService loggingService = LoggingService.CreateLoggingService(LoggerMode.Synchronous, 1);
             loggingService.RegisterLogger(_logger);

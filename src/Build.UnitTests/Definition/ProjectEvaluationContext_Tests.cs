@@ -29,6 +29,8 @@ namespace Microsoft.Build.UnitTests.Definition
     {
         public ProjectEvaluationContext_Tests()
         {
+            CachingSdkResolverService.ClearCaches();
+
             _env = TestEnvironment.Create();
 
             _resolver = new SdkUtilities.ConfigurableMockSdkResolver(
@@ -210,7 +212,7 @@ namespace Microsoft.Build.UnitTests.Definition
 
                 project.ReevaluateIfNecessary();
 
-                _resolver.ResolvedCalls["foo"].ShouldBe(2);
+                _resolver.ResolvedCalls["foo"].ShouldBe(1);
             }
             finally
             {
@@ -267,7 +269,7 @@ namespace Microsoft.Build.UnitTests.Definition
 
         [Theory]
         [InlineData(EvaluationContext.SharingPolicy.Shared, 1, 1)]
-        [InlineData(EvaluationContext.SharingPolicy.Isolated, 4, 4)]
+        [InlineData(EvaluationContext.SharingPolicy.Isolated, 1, 1)]
         public void ContextPinsSdkResolverCache(EvaluationContext.SharingPolicy policy, int sdkLookupsForFoo, int sdkLookupsForBar)
         {
             try

@@ -50,6 +50,8 @@ namespace Microsoft.Build.UnitTests.BackEnd
 
         public SdkResultOutOfProc_Tests(ITestOutputHelper output)
         {
+            CachingSdkResolverService.ClearCaches();
+
             _output = output;
             // Ensure that any previous tests which may have been using the default BuildManager do not conflict with us.
             BuildManager.DefaultBuildManager.Dispose();

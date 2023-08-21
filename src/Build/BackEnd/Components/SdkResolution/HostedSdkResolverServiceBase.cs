@@ -34,10 +34,6 @@ namespace Microsoft.Build.BackEnd.SdkResolution
         {
         }
 
-        public virtual void ClearCaches()
-        {
-        }
-
         /// <inheritdoc cref="IBuildComponent.InitializeComponent"/>
         public virtual void InitializeComponent(IBuildComponentHost host)
         {

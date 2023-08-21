@@ -30,6 +30,8 @@ namespace Microsoft.Build.UnitTests.Evaluation
 
         public SdkResultEvaluation_Tests(ITestOutputHelper log)
         {
+            Build.BackEnd.SdkResolution.CachingSdkResolverService.ClearCaches();
+
             _log = log;
 
             _env = TestEnvironment.Create();
